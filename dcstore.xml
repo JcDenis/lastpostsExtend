@@ -1,0 +1,12 @@
+<modules xmlns:da="http://dotaddict.org/da/">
+<module id="lastPostsExtend">
+<name>Derniers billets (étendu)</name>
+<version>2021.08.25.1</version>
+<author>Jean-Christian Denis and contributors</author>
+<desc>Extended list of entries</desc>
+<file>https://github.com/JcDenis/lastPostsExtend/releases/download/v2021.08.25.1/plugin-lastPostsExtend.zip</file>
+<da:dcmin>2.19</da:dcmin>
+<da:details>http://plugins.dotaddict.org/dc2/details/lastpostsExtend</da:details>
+<da:support>https://github.com/JcDenis/lastpostsExtend</da:support>
+</module>
+</modules>
