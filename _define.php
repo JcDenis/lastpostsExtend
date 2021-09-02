@@ -19,7 +19,7 @@ $this->registerModule(
     'Last entries (Extended)',
     'Extended list of entries',
     'Jean-Christian Denis and contributors',
-    '2021.08.25',
+    '2021.08.25.1',
     [
         'permissions' => 'admin',
         'type' => 'plugin',
