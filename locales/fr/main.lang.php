@@ -48,4 +48,3 @@ $GLOBALS['__l10n']['Excerpt length:'] = 'Taille de l\'extrait :';
 
 #_widgets.php:209
 $GLOBALS['__l10n']['Show comments count'] = 'Afficher le nombre de commentaires';
-
