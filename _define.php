@@ -21,9 +21,9 @@ $this->registerModule(
     'Jean-Christian Denis and contributors',
     '2021.09.17',
     [
+        'requires' => [['core', '2.19']],
         'permissions' => 'admin',
         'type' => 'plugin',
-        'dc_min' => '2.19',
         'support' => 'https://github.com/JcDenis/lastpostsExtend',
         'details' => 'http://plugins.dotaddict.org/dc2/details/lastpostsExtend',
         'repository' => 'https://raw.githubusercontent.com/JcDenis/lastpostsExtend/master/repository.xml'
