@@ -19,10 +19,10 @@ $this->registerModule(
     'Last entries (Extended)',
     'Extended list of entries',
     'Jean-Christian Denis and contributors',
-    '2021.09.17',
+    '2022.11.12',
     [
-        'requires' => [['core', '2.19']],
-        'permissions' => 'admin',
+        'requires' => [['core', '2.24']],
+        'permissions' => dcAuth::PERMISSION_ADMIN,
         'type' => 'plugin',
         'support' => 'https://github.com/JcDenis/lastpostsExtend',
         'details' => 'http://plugins.dotaddict.org/dc2/details/lastpostsExtend',

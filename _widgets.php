@@ -15,7 +15,7 @@ if (!defined('DC_RC_PATH')) {
     return null;
 }
 
-$core->addBehavior(
+dcCore::app()->addBehavior(
     'initWidgets',
     ['lastpostsextendWidget', 'initWidget']
 );
@@ -24,8 +24,6 @@ class lastpostsextendWidget
 {
     public static function initWidget($w)
     {
-        global $core;
-
         # Create widget
         $w->create(
             'lastpostsextend',
@@ -48,7 +46,7 @@ class lastpostsextendWidget
             __('Gallery') => 'galitem'
         ];
         # plugin muppet types
-        if ($core->plugins->moduleExists('muppet')) {
+        if (dcCore::app()->plugins->moduleExists('muppet')) {
             $muppet_types = muppet::getPostTypes();
             if(is_array($muppet_types) && !empty($muppet_types)) {
 
@@ -65,7 +63,7 @@ class lastpostsextendWidget
             $posttypes
         );
         # Category (post and page have same category)
-        $rs = $core->blog->getCategories([
+        $rs = dcCore::app()->blog->getCategories([
             'post_type' => 'post'
         ]);
         $categories = [
@@ -128,7 +126,7 @@ class lastpostsextendWidget
             'check'
         );
         # Tag
-        if ($core->plugins->moduleExists('tags')) {
+        if (dcCore::app()->plugins->moduleExists('tags')) {
             $w->lastpostsextend->setting(
                 'tag',
                 __('Limit to tags:'),
@@ -245,8 +243,6 @@ class lastpostsextendWidget
 
     public static function parseWidget($w)
     {
-        global $core;
-
         $params = [
             'sql' => '',
             'columns' => [],
@@ -259,8 +255,8 @@ class lastpostsextendWidget
         }
 
         # Home page only
-        if ($w->homeonly == 1 && $core->url->type != 'default' 
-        ||  $w->homeonly == 2 && $core->url->type == 'default') {
+        if ($w->homeonly == 1 && dcCore::app()->url->type != 'default' 
+        ||  $w->homeonly == 2 && dcCore::app()->url->type == 'default') {
             return null;
         }
 
@@ -328,19 +324,19 @@ class lastpostsextendWidget
         }
 
         # Tags
-        if ($core->plugins->moduleExists('tags') && $w->tag) {
+        if (dcCore::app()->plugins->moduleExists('tags') && $w->tag) {
             $tags = explode(',', $w->tag);
             foreach($tags as $i => $tag) { 
                 $tags[$i] = trim($tag);
             }
-            $params['from'] .= ', ' . $core->prefix . 'meta META ';
+            $params['from'] .= ', ' . dcCore::app()->prefix . 'meta META ';
             $params['sql'] .= 'AND META.post_id = P.post_id ';
-            $params['sql'] .= "AND META.meta_id " . $core->con->in($tags) . " ";
+            $params['sql'] .= "AND META.meta_id " . dcCore::app()->con->in($tags) . " ";
             $params['sql'] .= "AND META.meta_type = 'tag' ";
         }
 
-        $rs = $core->auth->sudo(
-            [$core->blog, 'getPosts'],
+        $rs = dcCore::app()->auth->sudo(
+            [dcCore::app()->blog, 'getPosts'],
             $params,
             false
         );
@@ -358,11 +354,11 @@ class lastpostsextendWidget
             '<' . ($rs->post_status == 1 ? 'a href="' . $rs->getURL() . '"' : 'span') .
             ' title="' .
             dt::dt2str(
-                $core->blog->settings->system->date_format,
+                dcCore::app()->blog->settings->system->date_format,
                 $rs->post_upddt
             ) . ', ' .
             dt::dt2str(
-                $core->blog->settings->system->time_format,
+                dcCore::app()->blog->settings->system->time_format,
                 $rs->post_upddt
             ) . '">' .
             html::escapeHTML($rs->post_title) .
@@ -376,7 +372,6 @@ class lastpostsextendWidget
             # First image
             if ($w->firstimage != '') {
                 $res .= self::entryFirstImage(
-                    $core,
                     $rs->post_type,
                     $rs->post_id,
                     $w->firstimage
@@ -387,9 +382,9 @@ class lastpostsextendWidget
             if ($w->excerpt) {
                 $excerpt = $rs->post_excerpt;
                 if ($rs->post_format == 'wiki') {
-                    $core->initWikiComment();
-                    $excerpt = $core->wikiTransform($excerpt);
-                    $excerpt = $core->HTMLfilter($excerpt);
+                    dcCore::app()->initWikiComment();
+                    $excerpt = dcCore::app()->wikiTransform($excerpt);
+                    $excerpt = dcCore::app()->HTMLfilter($excerpt);
                 }
                 if (strlen($excerpt) > 0) {
                     $cut = text::cutString(
@@ -412,15 +407,15 @@ class lastpostsextendWidget
         );
     }
 
-    private static function entryFirstImage($core, $type, $id, $size = 's')
+    private static function entryFirstImage($type, $id, $size = 's')
     {
         if (!in_array($type, ['post', 'page', 'galitem'])) {
 
             return '';
         }
 
-        $rs = $core->auth->sudo(
-            [$core->blog, 'getPosts'],
+        $rs = dcCore::app()->auth->sudo(
+            [dcCore::app()->blog, 'getPosts'],
             ['post_id' => $id, 'post_type' => $type],
             false
         );
@@ -433,13 +428,13 @@ class lastpostsextendWidget
             $size = 's';
         }
 
-        $p_url = $core->blog->settings->system->public_url;
+        $p_url = dcCore::app()->blog->settings->system->public_url;
         $p_site = preg_replace(
             '#^(.+?//.+?)/(.*)$#',
             '$1',
-            $core->blog->url
+            dcCore::app()->blog->url
         );
-        $p_root = $core->blog->public_path;
+        $p_root = dcCore::app()->blog->public_path;
 
         $pattern = '(?:' . preg_quote($p_site, '/') . ')?' . preg_quote($p_url, '/');
         $pattern = sprintf('/<img.+?src="%s(.*?\.(?:jpg|gif|png))"[^>]+/msu', $pattern);
