@@ -1,16 +1,15 @@
 <?php
 /**
  * @brief lastpostsExtend, a plugin for Dotclear 2
- * 
+ *
  * @package Dotclear
  * @subpackage Plugin
- * 
+ *
  * @author Jean-Christian Denis and contributors
- * 
+ *
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-
 if (!defined('DC_RC_PATH')) {
     return null;
 }
@@ -41,16 +40,15 @@ class lastpostsextendWidget
         );
         # type
         $posttypes = [
-            __('Post') => 'post',
-            __('Page') => 'page',
-            __('Gallery') => 'galitem'
+            __('Post')    => 'post',
+            __('Page')    => 'page',
+            __('Gallery') => 'galitem',
         ];
         # plugin muppet types
         if (dcCore::app()->plugins->moduleExists('muppet')) {
             $muppet_types = muppet::getPostTypes();
-            if(is_array($muppet_types) && !empty($muppet_types)) {
-
-                foreach($muppet_types as $k => $v) {
+            if (is_array($muppet_types) && !empty($muppet_types)) {
+                foreach ($muppet_types as $k => $v) {
                     $posttypes[$v['name']] = $k;
                 }
             }
@@ -64,18 +62,17 @@ class lastpostsextendWidget
         );
         # Category (post and page have same category)
         $rs = dcCore::app()->blog->getCategories([
-            'post_type' => 'post'
+            'post_type' => 'post',
         ]);
         $categories = [
-            '' => '',
-            __('Uncategorized') => 'null'
+            ''                  => '',
+            __('Uncategorized') => 'null',
         ];
         while ($rs->fetch()) {
             $categories[str_repeat(
                 '&nbsp;&nbsp;',
-                $rs->level-1
-            ) . '&bull; ' . html::escapeHTML($rs->cat_title)] = 
-                $rs->cat_id;
+                $rs->level - 1
+            ) . '&bull; ' . html::escapeHTML($rs->cat_title)] = $rs->cat_id;
         }
         $w->lastpostsextend->setting(
             'category',
@@ -92,9 +89,9 @@ class lastpostsextendWidget
             'no',
             'combo',
             [
-                __('all') => 'all',
+                __('all')                   => 'all',
                 __('only without password') => 'no',
-                __('only with password') => 'yes'
+                __('only with password')    => 'yes',
             ]
         );
         # Status
@@ -104,11 +101,11 @@ class lastpostsextendWidget
             '1',
             'combo',
             [
-                __('all') => 'all',
-                __('pending') => '-2',
-                __('scheduled') => '-1',
+                __('all')         => 'all',
+                __('pending')     => '-2',
+                __('scheduled')   => '-1',
                 __('unpublished') => '0',
-                __('published') => '1'
+                __('published')   => '1',
             ]
         );
         # Selected entries only
@@ -155,9 +152,9 @@ class lastpostsextendWidget
             'date',
             'combo',
             [
-                __('Date') => 'date',
-                __('Title') => 'post_title',
-                __('Comments') => 'nb_comment'
+                __('Date')     => 'date',
+                __('Title')    => 'post_title',
+                __('Comments') => 'nb_comment',
             ]
         );
         # Sort order
@@ -167,8 +164,8 @@ class lastpostsextendWidget
             'desc',
             'combo',
             [
-                __('Ascending') => 'asc',
-                __('Descending') => 'desc'
+                __('Ascending')  => 'asc',
+                __('Descending') => 'desc',
             ]
         );
         # First image
@@ -178,12 +175,12 @@ class lastpostsextendWidget
             '',
             'combo',
             [
-                __('no') => '',
-                __('square') => 'sq',
+                __('no')        => '',
+                __('square')    => 'sq',
                 __('thumbnail') => 't',
-                __('small') => 's',
-                __('medium') => 'm',
-                __('original') => 'o'
+                __('small')     => 's',
+                __('medium')    => 'm',
+                __('original')  => 'o',
             ]
         );
         # With excerpt
@@ -214,9 +211,9 @@ class lastpostsextendWidget
             0,
             'combo',
             [
-                __('All pages') => 0,
-                __('Home page only') => 1,
-                __('Except on home page') => 2
+                __('All pages')           => 0,
+                __('Home page only')      => 1,
+                __('Except on home page') => 2,
             ]
         );
         # widget option - content only
@@ -244,19 +241,19 @@ class lastpostsextendWidget
     public static function parseWidget($w)
     {
         $params = [
-            'sql' => '',
+            'sql'     => '',
             'columns' => [],
-            'from' => ''
+            'from'    => '',
         ];
 
         # Widget is offline
         if ($w->offline) {
-            return; 
+            return;
         }
 
         # Home page only
-        if ($w->homeonly == 1 && dcCore::app()->url->type != 'default' 
-        ||  $w->homeonly == 2 && dcCore::app()->url->type == 'default') {
+        if ($w->homeonly == 1 && dcCore::app()->url->type != 'default'
+        || $w->homeonly  == 2 && dcCore::app()->url->type == 'default') {
             return null;
         }
 
@@ -268,8 +265,7 @@ class lastpostsextendWidget
         # Passworded
         if ($w->passworded == 'yes') {
             $params['sql'] .= 'AND post_password IS NOT NULL ';
-        }
-        elseif ($w->passworded == 'no') {
+        } elseif ($w->passworded == 'no') {
             $params['sql'] .= 'AND post_password IS NULL ';
         }
 
@@ -285,23 +281,21 @@ class lastpostsextendWidget
 
         # Updated posts only
         if ($w->updatedonly) {
-            $params['sql'] .= 
-                "AND post_creadt < post_upddt " .
-                "AND post_dt < post_upddt ";
-/*
-            $params['sql'] .= 
-            "AND TIMESTAMP(post_creadt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ".
-            "AND TIMESTAMP(post_dt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ";
-//*/
-            $params['order'] = $w->sortby == 'date' ? 
+            $params['sql'] .= 'AND post_creadt < post_upddt ' .
+                'AND post_dt < post_upddt ';
+            /*
+                        $params['sql'] .=
+                        "AND TIMESTAMP(post_creadt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ".
+                        "AND TIMESTAMP(post_dt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ";
+            //*/
+            $params['order'] = $w->sortby == 'date' ?
                 'post_upddt ' : $w->sortby . ' ';
-        }
-        else {
-            $params['order'] = $w->sortby == 'date' ? 
+        } else {
+            $params['order'] = $w->sortby == 'date' ?
                 'post_dt ' : $w->sortby . ' ';
         }
         $params['order'] .= $w->sort == 'asc' ? 'asc' : 'desc';
-        $params['limit'] = abs((integer) $w->limit);
+        $params['limit']      = abs((int) $w->limit);
         $params['no_content'] = true;
 
         # Selected posts only
@@ -317,7 +311,7 @@ class lastpostsextendWidget
             if ($w->category == 'null') {
                 $params['sql'] .= ' AND P.cat_id IS NULL ';
             } elseif (is_numeric($w->category)) {
-                $params['cat_id'] = (integer) $w->category;
+                $params['cat_id'] = (int) $w->category;
             } else {
                 $params['cat_url'] = $w->category;
             }
@@ -326,13 +320,13 @@ class lastpostsextendWidget
         # Tags
         if (dcCore::app()->plugins->moduleExists('tags') && $w->tag) {
             $tags = explode(',', $w->tag);
-            foreach($tags as $i => $tag) { 
+            foreach ($tags as $i => $tag) {
                 $tags[$i] = trim($tag);
             }
             $params['from'] .= ', ' . dcCore::app()->prefix . 'meta META ';
-            $params['sql'] .= 'AND META.post_id = P.post_id ';
-            $params['sql'] .= "AND META.meta_id " . dcCore::app()->con->in($tags) . " ";
-            $params['sql'] .= "AND META.meta_type = 'tag' ";
+            $params['sql']  .= 'AND META.post_id = P.post_id ';
+            $params['sql']  .= 'AND META.meta_id ' . dcCore::app()->con->in($tags) . ' ';
+            $params['sql']  .= "AND META.meta_type = 'tag' ";
         }
 
         $rs = dcCore::app()->auth->sudo(
@@ -389,7 +383,7 @@ class lastpostsextendWidget
                 if (strlen($excerpt) > 0) {
                     $cut = text::cutString(
                         $excerpt,
-                        abs((integer) $w->excerptlen)
+                        abs((int) $w->excerptlen)
                     );
                     $res .= ' : ' . $cut . (strlen($cut) < strlen($excerpt) ? '...' : '');
 
@@ -400,9 +394,9 @@ class lastpostsextendWidget
         }
 
         return $w->renderDiv(
-            $w->content_only, 
-            'lastpostsextend ' . $w->class, 
-            '', 
+            $w->content_only,
+            'lastpostsextend ' . $w->class,
+            '',
             '<ul>' . $res . '</ul>'
         );
     }
@@ -410,7 +404,6 @@ class lastpostsextendWidget
     private static function entryFirstImage($type, $id, $size = 's')
     {
         if (!in_array($type, ['post', 'page', 'galitem'])) {
-
             return '';
         }
 
@@ -428,7 +421,7 @@ class lastpostsextendWidget
             $size = 's';
         }
 
-        $p_url = dcCore::app()->blog->settings->system->public_url;
+        $p_url  = dcCore::app()->blog->settings->system->public_url;
         $p_site = preg_replace(
             '#^(.+?//.+?)/(.*)$#',
             '$1',
@@ -444,14 +437,13 @@ class lastpostsextendWidget
 
         $subject = $rs->post_excerpt_xhtml . $rs->post_content_xhtml . $rs->cat_desc;
         if (preg_match_all($pattern, $subject, $m) > 0) {
-
             foreach ($m[1] as $i => $img) {
                 if (($src = self::ContentFirstImageLookup($p_root, $img, $size)) !== false) {
-
                     $src = $p_url . (dirname($img) != '/' ? dirname($img) : '') . '/' . $src;
                     if (preg_match('/alt="([^"]+)"/', $m[0][$i], $malt)) {
                         $alt = $malt[1];
                     }
+
                     break;
                 }
             }
@@ -461,8 +453,8 @@ class lastpostsextendWidget
             return '';
         }
 
-        return 
-        '<div class="img-box">' .                
+        return
+        '<div class="img-box">' .
         '<div class="img-thumbnail">' .
         '<a title="' . html::escapeHTML($rs->post_title) . '" href="' . $rs->getURL() . '">' .
         '<img alt="' . $alt . '" src="' . stripslashes($src) . '" />' .

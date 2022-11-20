@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/JcDenis/lastpostsExtend)](https://github.com/JcDenis/lastpostsExtend/releases)
 [![Date](https://img.shields.io/github/release-date/JcDenis/lastpostsExtend)](https://github.com/JcDenis/lastpostsExtend/releases)
 [![Issues](https://img.shields.io/github/issues/JcDenis/lastpostsExtend)](https://github.com/JcDenis/lastpostsExtend/issues)
-[![Dotclear](https://img.shields.io/badge/dotclear-v2.19-blue.svg)](https://fr.dotclear.org/download)
+[![Dotclear](https://img.shields.io/badge/dotclear-v2.24-blue.svg)](https://fr.dotclear.org/download)
 [![Dotaddict](https://img.shields.io/badge/dotaddict-official-green.svg)](https://plugins.dotaddict.org/dc2/details/lastpostsExtend)
 [![License](https://img.shields.io/github/license/JcDenis/lastpostsExtend)](https://github.com/JcDenis/lastpostsExtend/blob/master/LICENSE)
 
@@ -19,7 +19,7 @@ Like widget lastposts but with more options.
  lastpostsExtend requires: 
 
   * permissions to manage widgets
-  * Dotclear 2.19
+  * Dotclear 2.24
 
 ## USAGE
 
