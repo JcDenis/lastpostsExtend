@@ -32,12 +32,7 @@ class lastpostsextendWidget
             __('Extended list of entries')
         );
         # Title
-        $w->lastpostsextend->setting(
-            'title',
-            __('Title:'),
-            __('Last entries'),
-            'text'
-        );
+        $w->lastpostsextend->addTitle(__('Last entries'));
         # type
         $posttypes = [
             __('Post')    => 'post',
@@ -204,38 +199,12 @@ class lastpostsextendWidget
             0,
             'check'
         );
-        # Home only
-        $w->lastpostsextend->setting(
-            'homeonly',
-            __('Display on:'),
-            0,
-            'combo',
-            [
-                __('All pages')           => 0,
-                __('Home page only')      => 1,
-                __('Except on home page') => 2,
-            ]
-        );
-        # widget option - content only
-        $w->lastpostsextend->setting(
-            'content_only',
-            __('Content only'),
-            0,
-            'check'
-        );
-        # widget option - additionnal CSS
-        $w->lastpostsextend->setting(
-            'class',
-            __('CSS class:'),
-            ''
-        );
-        # widget option - put offline
-        $w->lastpostsextend->setting(
-            'offline',
-            __('Offline'),
-            0,
-            'check'
-        );
+        # common
+        $w->lastpostsextend
+            ->addHomeOnly()
+            ->addContentOnly()
+            ->addClass()
+            ->addOffline();
     }
 
     public static function parseWidget($w)
@@ -252,8 +221,8 @@ class lastpostsextendWidget
         }
 
         # Home page only
-        if ($w->homeonly == 1 && dcCore::app()->url->type != 'default'
-        || $w->homeonly  == 2 && dcCore::app()->url->type == 'default') {
+        if (($w->homeonly == 1 && !dcCore::app()->url->isHome(dcCore::app()->url->type))
+         || ($w->homeonly == 2 && dcCore::app()->url->isHome(dcCore::app()->url->type))) {
             return null;
         }
 
@@ -323,7 +292,7 @@ class lastpostsextendWidget
             foreach ($tags as $i => $tag) {
                 $tags[$i] = trim($tag);
             }
-            $params['from'] .= ', ' . dcCore::app()->prefix . 'meta META ';
+            $params['from'] .= ', ' . dcCore::app()->prefix . dcMeta::META_TABLE_NAME . ' META ';
             $params['sql']  .= 'AND META.post_id = P.post_id ';
             $params['sql']  .= 'AND META.meta_id ' . dcCore::app()->con->in($tags) . ' ';
             $params['sql']  .= "AND META.meta_type = 'tag' ";
