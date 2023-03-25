@@ -18,15 +18,15 @@ $this->registerModule(
     'Last entries (Extended)',
     'Extended list of entries',
     'Jean-Christian Denis and contributors',
-    '2022.11.20',
+    '2023.03.25',
     [
-        'requires'    => [['core', '2.24']],
+        'requires'    => [['core', '2.26']],
         'permissions' => dcCore::app()->auth->makePermissions([
             dcAuth::PERMISSION_ADMIN,
         ]),
-        'type'        => 'plugin',
-        'support'     => 'https://github.com/JcDenis/lastpostsExtend',
-        'details'     => 'http://plugins.dotaddict.org/dc2/details/lastpostsExtend',
-        'repository'  => 'https://raw.githubusercontent.com/JcDenis/lastpostsExtend/master/repository.xml',
+        'type'       => 'plugin',
+        'support'    => 'https://github.com/JcDenis/' . basename(__DIR__),
+        'details'    => 'http://plugins.dotaddict.org/dc2/details/' . basename(__DIR__),
+        'repository' => 'https://raw.githubusercontent.com/JcDenis/' . basename(__DIR__) . '/master/repository.xml',
     ]
 );

@@ -1,3 +1,7 @@
+2023.03.25
+- require dotclear 2.26
+- use namespace
+
 2022.11.20
 - fix compatibility with Dotclear 2.24 (required)
 
