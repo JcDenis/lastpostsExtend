@@ -10,8 +10,32 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_CONTEXT_ADMIN')) {
-    return null;
-}
+declare(strict_types=1);
 
-require __DIR__ . '/_widgets.php';
+namespace Dotclear\Plugin\lastpostsExtend;
+
+use dcCore;
+use dcNsProcess;
+
+class Backend extends dcNsProcess
+{
+    public static function init(): bool
+    {
+        static::$init = defined('DC_CONTEXT_ADMIN');
+
+        return static::$init;
+    }
+
+    public static function process(): bool
+    {
+        if (!static::$init) {
+            return false;
+        }
+
+        dcCore::app()->addBehaviors([
+            'initWidgets' => [Widgets::class, 'initWidgets'],
+        ]);
+
+        return true;
+    }
+}

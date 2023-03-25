@@ -10,24 +10,29 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_RC_PATH')) {
-    return null;
-}
+declare(strict_types=1);
 
-dcCore::app()->addBehavior(
-    'initWidgets',
-    ['lastpostsextendWidget', 'initWidget']
-);
+namespace Dotclear\Plugin\lastpostsExtend;
 
-class lastpostsextendWidget
+use dcBlog;
+use dcCore;
+use dcMeta;
+use Dotclear\Helper\Text;
+use Dotclear\Helper\File\Path;
+use Dotclear\Helper\Html\Html;
+use Dotclear\Plugin\widgets\WidgetsStack;
+use Dotclear\Plugin\widgets\WidgetsElement;
+use dt;
+
+class Widgets
 {
-    public static function initWidget($w)
+    public static function initWidgets(WidgetsStack $w): void
     {
         # Create widget
         $w->create(
             'lastpostsextend',
             __('Last entries (Extended)'),
-            ['lastpostsextendWidget', 'parseWidget'],
+            [self::class, 'parseWidget'],
             null,
             __('Extended list of entries')
         );
@@ -66,8 +71,8 @@ class lastpostsextendWidget
         while ($rs->fetch()) {
             $categories[str_repeat(
                 '&nbsp;&nbsp;',
-                $rs->level - 1
-            ) . '&bull; ' . html::escapeHTML($rs->cat_title)] = $rs->cat_id;
+                (int) $rs->f('level') - 1
+            ) . '&bull; ' . Html::escapeHTML($rs->f('cat_title'))] = $rs->f('cat_id');
         }
         $w->lastpostsextend->setting(
             'category',
@@ -207,7 +212,7 @@ class lastpostsextendWidget
             ->addOffline();
     }
 
-    public static function parseWidget($w)
+    public static function parseWidget(WidgetsElement $w): string
     {
         $params = [
             'sql'     => '',
@@ -215,14 +220,9 @@ class lastpostsextendWidget
             'from'    => '',
         ];
 
-        # Widget is offline
-        if ($w->offline) {
-            return;
-        }
-
-        # Home page only
-        if (!$w->checkHomeOnly(dcCore::app()->url->type)) {
-            return null;
+        # Widget is offline & Home page only
+        if ($w->offline || !$w->checkHomeOnly(dcCore::app()->url->type)) {
+            return '';
         }
 
         # Need posts excerpt
@@ -305,51 +305,53 @@ class lastpostsextendWidget
 
         # No result
         if ($rs->isEmpty()) {
-            return null;
+            return '';
         }
 
         # Return
-        $res = $w->title ? $w->renderTitle(html::escapeHTML($w->title)) : '';
+        $res = $w->title ? $w->renderTitle(Html::escapeHTML($w->title)) : '';
 
         while ($rs->fetch()) {
+            $published = ((int) $rs->f('post_status')) == dcBlog::POST_PUBLISHED;
+
             $res .= '<li>' .
-            '<' . ($rs->post_status == 1 ? 'a href="' . $rs->getURL() . '"' : 'span') .
+            '<' . ($published ? 'a href="' . $rs->getURL() . '"' : 'span') .
             ' title="' .
             dt::dt2str(
-                dcCore::app()->blog->settings->system->date_format,
-                $rs->post_upddt
+                dcCore::app()->blog->settings->get('system')->get('date_format'),
+                $rs->f('post_upddt')
             ) . ', ' .
             dt::dt2str(
-                dcCore::app()->blog->settings->system->time_format,
-                $rs->post_upddt
+                dcCore::app()->blog->settings->get('system')->get('time_format'),
+                $rs->f('post_upddt')
             ) . '">' .
-            html::escapeHTML($rs->post_title) .
-            '</' . ($rs->post_status == 1 ? 'a' : 'span') . '>';
+            Html::escapeHTML($rs->f('post_title')) .
+            '</' . ($published ? 'a' : 'span') . '>';
 
             # Nb comments
-            if ($w->commentscount && $rs->post_status == 1) {
+            if ($w->commentscount && $published) {
                 $res .= ' (' . $rs->nb_comment . ')';
             }
 
             # First image
             if ($w->firstimage != '') {
                 $res .= self::entryFirstImage(
-                    $rs->post_type,
-                    $rs->post_id,
+                    $rs->f('post_type'),
+                    $rs->f('post_id'),
                     $w->firstimage
                 );
             }
 
             # Excerpt
             if ($w->excerpt) {
-                $excerpt = $rs->post_excerpt;
-                if ($rs->post_format == 'wiki') {
+                $excerpt = $rs->f('post_excerpt');
+                if ($rs->f('post_format') == 'wiki') {
                     dcCore::app()->initWikiComment();
                     $excerpt = dcCore::app()->wikiTransform($excerpt);
                     $excerpt = dcCore::app()->HTMLfilter($excerpt);
                 }
                 if (strlen($excerpt) > 0) {
-                    $cut = text::cutString(
+                    $cut = Text::cutString(
                         $excerpt,
                         abs((int) $w->excerptlen)
                     );
@@ -362,14 +364,14 @@ class lastpostsextendWidget
         }
 
         return $w->renderDiv(
-            $w->content_only,
+            (bool) $w->content_only,
             'lastpostsextend ' . $w->class,
             '',
             '<ul>' . $res . '</ul>'
         );
     }
 
-    private static function entryFirstImage($type, $id, $size = 's')
+    private static function entryFirstImage(string $type, int|string $id, string $size = 's'): string
     {
         if (!in_array($type, ['post', 'page', 'galitem'])) {
             return '';
@@ -389,7 +391,7 @@ class lastpostsextendWidget
             $size = 's';
         }
 
-        $p_url  = dcCore::app()->blog->settings->system->public_url;
+        $p_url  = dcCore::app()->blog->settings->get('system')->get('public_url');
         $p_site = preg_replace(
             '#^(.+?//.+?)/(.*)$#',
             '$1',
@@ -403,10 +405,10 @@ class lastpostsextendWidget
         $src = '';
         $alt = '';
 
-        $subject = $rs->post_excerpt_xhtml . $rs->post_content_xhtml . $rs->cat_desc;
+        $subject = $rs->f('post_excerpt_xhtml') . $rs->f('post_content_xhtml') . $rs->f('cat_desc');
         if (preg_match_all($pattern, $subject, $m) > 0) {
             foreach ($m[1] as $i => $img) {
-                if (($src = self::ContentFirstImageLookup($p_root, $img, $size)) !== false) {
+                if (($src = self::ContentFirstImageLookup($p_root, $img, $size)) != '') {
                     $src = $p_url . (dirname($img) != '/' ? dirname($img) : '') . '/' . $src;
                     if (preg_match('/alt="([^"]+)"/', $m[0][$i], $malt)) {
                         $alt = $malt[1];
@@ -424,23 +426,24 @@ class lastpostsextendWidget
         return
         '<div class="img-box">' .
         '<div class="img-thumbnail">' .
-        '<a title="' . html::escapeHTML($rs->post_title) . '" href="' . $rs->getURL() . '">' .
+        '<a title="' . Html::escapeHTML($rs->f('post_title')) . '" href="' . $rs->getURL() . '">' .
         '<img alt="' . $alt . '" src="' . stripslashes($src) . '" />' .
         '</a></div>' .
         "</div>\n";
     }
 
-    private static function ContentFirstImageLookup($root, $img, $size)
+    private static function ContentFirstImageLookup(string $root, string $img, string $size): string
     {
+        $res = '';
+
         # Get base name and extension
-        $info = path::info($img);
+        $info = Path::info($img);
         $base = $info['base'];
 
         if (preg_match('/^\.(.+)_(sq|t|s|m)$/', $base, $m)) {
             $base = $m[1];
         }
 
-        $res = false;
         if ($size != 'o' && file_exists($root . '/' . $info['dirname'] . '/.' . $base . '_' . $size . '.jpg')) {
             $res = '.' . $base . '_' . $size . '.jpg';
         } else {
@@ -456,6 +459,6 @@ class lastpostsextendWidget
             }
         }
 
-        return $res ? $res : false;
+        return $res;
     }
 }
