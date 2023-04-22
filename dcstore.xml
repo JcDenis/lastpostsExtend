@@ -2,10 +2,10 @@
 <modules xmlns:da="http://dotaddict.org/da/">
   <module id="lastpostsExtend">
     <name>Last entries (Extended)</name>
-    <version>2023.03.25</version>
+    <version>2023.04.22</version>
     <author>Jean-Christian Denis and contributors</author>
     <desc>Extended list of entries</desc>
-    <file>https://github.com/JcDenis/lastpostsExtend/releases/download/v2023.03.25/plugin-lastpostsExtend.zip</file>
+    <file>https://github.com/JcDenis/lastpostsExtend/releases/download/v2023.04.22/plugin-lastpostsExtend.zip</file>
     <da:dcmin>2.26</da:dcmin>
     <da:details>http://plugins.dotaddict.org/dc2/details/lastpostsExtend</da:details>
     <da:support>https://github.com/JcDenis/lastpostsExtend</da:support>
