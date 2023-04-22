@@ -28,7 +28,12 @@ class Widgets
 {
     public static function initWidgets(WidgetsStack $w): void
     {
-        # Create widget
+        // nullsafe
+        if (is_null(dcCore::app()->blog)) {
+            return;
+        }
+
+        // Create widget
         $w->create(
             'lastpostsextend',
             __('Last entries (Extended)'),
@@ -36,17 +41,18 @@ class Widgets
             null,
             __('Extended list of entries')
         );
-        # Title
+        // Title
         $w->lastpostsextend->addTitle(__('Last entries'));
-        # type
+
+        // post type
         $posttypes = [
             __('Post')    => 'post',
             __('Page')    => 'page',
             __('Gallery') => 'galitem',
         ];
-        # plugin muppet types
-        if (dcCore::app()->plugins->moduleExists('muppet')) {
-            $muppet_types = muppet::getPostTypes();
+        // plugin muppet types
+        if (dcCore::app()->plugins->moduleExists('muppet') && class_exists('\muppet')) {
+            $muppet_types = \muppet::getPostTypes();
             if (is_array($muppet_types) && !empty($muppet_types)) {
                 foreach ($muppet_types as $k => $v) {
                     $posttypes[$v['name']] = $k;
@@ -60,7 +66,8 @@ class Widgets
             'combo',
             $posttypes
         );
-        # Category (post and page have same category)
+
+        // Category (post and page have same category)
         $rs = dcCore::app()->blog->getCategories([
             'post_type' => 'post',
         ]);
@@ -82,7 +89,8 @@ class Widgets
             $categories
         );
         unset($rs, $categories);
-        # Pasworded
+
+        // Passworded
         $w->lastpostsextend->setting(
             'passworded',
             __('Protection:'),
@@ -94,7 +102,8 @@ class Widgets
                 __('only with password')    => 'yes',
             ]
         );
-        # Status
+
+        // Status
         $w->lastpostsextend->setting(
             'status',
             __('Status:'),
@@ -108,21 +117,24 @@ class Widgets
                 __('published')   => '1',
             ]
         );
-        # Selected entries only
+
+        // Selected entries only
         $w->lastpostsextend->setting(
             'selectedonly',
             __('Selected entries only'),
             0,
             'check'
         );
-        # Updated entries only
+
+        // Updated entries only
         $w->lastpostsextend->setting(
             'updatedonly',
             __('Updated entries only'),
             0,
             'check'
         );
-        # Tag
+
+        // Tag
         if (dcCore::app()->plugins->moduleExists('tags')) {
             $w->lastpostsextend->setting(
                 'tag',
@@ -131,21 +143,24 @@ class Widgets
                 'text'
             );
         }
-        # Search
+
+        // Search
         $w->lastpostsextend->setting(
             'search',
             __('Limit to words:'),
             '',
             'text'
         );
-        # Entries limit
+
+        // Entries limit
         $w->lastpostsextend->setting(
             'limit',
             __('Entries limit:'),
             10,
             'text'
         );
-        # Sort type
+
+        // Sort
         $w->lastpostsextend->setting(
             'sortby',
             __('Order by:'),
@@ -157,7 +172,6 @@ class Widgets
                 __('Comments') => 'nb_comment',
             ]
         );
-        # Sort order
         $w->lastpostsextend->setting(
             'sort',
             __('Sort:'),
@@ -168,7 +182,8 @@ class Widgets
                 __('Descending') => 'desc',
             ]
         );
-        # First image
+
+        // First image
         $w->lastpostsextend->setting(
             'firstimage',
             __('Show entries first image:'),
@@ -183,28 +198,32 @@ class Widgets
                 __('original')  => 'o',
             ]
         );
-        # With excerpt
+
+        // With excerpt
         $w->lastpostsextend->setting(
             'excerpt',
             __('Show entries excerpt'),
             0,
             'check'
         );
-        # Excerpt length
+
+        // Excerpt cut length
         $w->lastpostsextend->setting(
             'excerptlen',
             __('Excerpt length:'),
             100,
             'text'
         );
-        # Comment count
+
+        // Comment count
         $w->lastpostsextend->setting(
             'commentscount',
             __('Show comments count'),
             0,
             'check'
         );
-        # common
+
+        // commons
         $w->lastpostsextend
             ->addHomeOnly()
             ->addContentOnly()
@@ -214,40 +233,41 @@ class Widgets
 
     public static function parseWidget(WidgetsElement $w): string
     {
+        // Widget is offline & Home page only
+        if (is_null(dcCore::app()->auth) || is_null(dcCore::app()->blog) || $w->offline || !$w->checkHomeOnly(dcCore::app()->url->type)) {
+            return '';
+        }
+
+        // Need posts excerpt
+        if ($w->excerpt) {
+            $params['columns'][] = 'post_excerpt';
+        }
+
+        // prepare request params
         $params = [
             'sql'     => '',
             'columns' => [],
             'from'    => '',
         ];
 
-        # Widget is offline & Home page only
-        if ($w->offline || !$w->checkHomeOnly(dcCore::app()->url->type)) {
-            return '';
-        }
-
-        # Need posts excerpt
-        if ($w->excerpt) {
-            $params['columns'][] = 'post_excerpt';
-        }
-
-        # Passworded
+        // Passworded
         if ($w->passworded == 'yes') {
             $params['sql'] .= 'AND post_password IS NOT NULL ';
         } elseif ($w->passworded == 'no') {
             $params['sql'] .= 'AND post_password IS NULL ';
         }
 
-        # Status
+        // Status
         if ($w->status != 'all') {
             $params['post_status'] = $w->status;
         }
 
-        # Search words
+        // Search words
         if ('' != $w->search) {
             $params['search'] = $w->search;
         }
 
-        # Updated posts only
+        // Updated posts only
         if ($w->updatedonly) {
             $params['sql'] .= 'AND post_creadt < post_upddt ' .
                 'AND post_dt < post_upddt ';
@@ -266,15 +286,15 @@ class Widgets
         $params['limit']      = abs((int) $w->limit);
         $params['no_content'] = true;
 
-        # Selected posts only
+        // Selected posts only
         if ($w->selectedonly) {
             $params['post_selected'] = 1;
         }
 
-        # Type
+        // Post type
         $params['post_type'] = $w->posttype;
 
-        # Category
+        // Category
         if ($w->category) {
             if ($w->category == 'null') {
                 $params['sql'] .= ' AND P.cat_id IS NULL ';
@@ -285,7 +305,7 @@ class Widgets
             }
         }
 
-        # Tags
+        // Tags
         if (dcCore::app()->plugins->moduleExists('tags') && $w->tag) {
             $tags = explode(',', $w->tag);
             foreach ($tags as $i => $tag) {
@@ -303,15 +323,18 @@ class Widgets
             false
         );
 
-        # No result
+        // No result
         if ($rs->isEmpty()) {
             return '';
         }
 
-        # Return
+        // Parse result
         $res = $w->title ? $w->renderTitle(Html::escapeHTML($w->title)) : '';
 
         while ($rs->fetch()) {
+            if (is_null(dcCore::app()->blog)) { // phpstan ignores previous check !?
+                break;
+            }
             $published = ((int) $rs->f('post_status')) == dcBlog::POST_PUBLISHED;
 
             $res .= '<li>' .
@@ -328,12 +351,12 @@ class Widgets
             Html::escapeHTML($rs->f('post_title')) .
             '</' . ($published ? 'a' : 'span') . '>';
 
-            # Nb comments
+            // Nb comments
             if ($w->commentscount && $published) {
                 $res .= ' (' . $rs->nb_comment . ')';
             }
 
-            # First image
+            // First image
             if ($w->firstimage != '') {
                 $res .= self::entryFirstImage(
                     $rs->f('post_type'),
@@ -342,7 +365,7 @@ class Widgets
                 );
             }
 
-            # Excerpt
+            // Excerpt
             if ($w->excerpt) {
                 $excerpt = $rs->f('post_excerpt');
                 if ($rs->f('post_format') == 'wiki') {
@@ -373,7 +396,7 @@ class Widgets
 
     private static function entryFirstImage(string $type, int|string $id, string $size = 's'): string
     {
-        if (!in_array($type, ['post', 'page', 'galitem'])) {
+        if (is_null(dcCore::app()->auth) || is_null(dcCore::app()->blog) || !in_array($type, ['post', 'page', 'galitem'])) {
             return '';
         }
 
@@ -391,8 +414,8 @@ class Widgets
             $size = 's';
         }
 
-        $p_url  = dcCore::app()->blog->settings->get('system')->get('public_url');
-        $p_site = preg_replace(
+        $p_url  = (string) dcCore::app()->blog->settings->get('system')->get('public_url');
+        $p_site = (string) preg_replace(
             '#^(.+?//.+?)/(.*)$#',
             '$1',
             dcCore::app()->blog->url
