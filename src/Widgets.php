@@ -17,12 +17,12 @@ namespace Dotclear\Plugin\lastpostsExtend;
 use dcBlog;
 use dcCore;
 use dcMeta;
+use Dotclear\Helper\Date;
 use Dotclear\Helper\Text;
 use Dotclear\Helper\File\Path;
 use Dotclear\Helper\Html\Html;
 use Dotclear\Plugin\widgets\WidgetsStack;
 use Dotclear\Plugin\widgets\WidgetsElement;
-use dt;
 
 class Widgets
 {
@@ -317,11 +317,11 @@ class Widgets
             $res .= '<li>' .
             '<' . ($published ? 'a href="' . $rs->getURL() . '"' : 'span') .
             ' title="' .
-            dt::dt2str(
+            Date::dt2str(
                 dcCore::app()->blog->settings->get('system')->get('date_format'),
                 $rs->f('post_upddt')
             ) . ', ' .
-            dt::dt2str(
+            Date::dt2str(
                 dcCore::app()->blog->settings->get('system')->get('time_format'),
                 $rs->f('post_upddt')
             ) . '">' .
