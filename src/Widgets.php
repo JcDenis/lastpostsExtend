@@ -394,7 +394,7 @@ class Widgets
         );
     }
 
-    private static function entryFirstImage(string $type, int|string $id, string $size = 's'): string
+    private static function entryFirstImage(string $type, $id, string $size = 's'): string
     {
         if (is_null(dcCore::app()->auth) || is_null(dcCore::app()->blog) || !in_array($type, ['post', 'page', 'galitem'])) {
             return '';

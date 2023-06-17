@@ -1,4 +1,8 @@
-2023.04.022
+2023.06.17
+- require dotclear 2.26
+- fix php7.4 compatibility
+
+2023.04.22
 - require dotclear 2.26
 - use latest helper namespace
 - fix nullsafe warnings
