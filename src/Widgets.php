@@ -51,7 +51,7 @@ class Widgets
             __('Gallery') => 'galitem',
         ];
         // plugin muppet types
-        if (dcCore::app()->plugins->moduleExists('muppet') && class_exists('\muppet')) {
+        if (dcCore::app()->plugins->getDefine('muppet')->isDefined() && class_exists('\muppet')) {
             $muppet_types = \muppet::getPostTypes();
             if (is_array($muppet_types) && !empty($muppet_types)) {
                 foreach ($muppet_types as $k => $v) {
@@ -234,7 +234,7 @@ class Widgets
     public static function parseWidget(WidgetsElement $w): string
     {
         // Widget is offline & Home page only
-        if (is_null(dcCore::app()->auth) || is_null(dcCore::app()->blog) || $w->offline || !$w->checkHomeOnly(dcCore::app()->url->type)) {
+        if (is_null(dcCore::app()->blog) || $w->offline || !$w->checkHomeOnly(dcCore::app()->url->type)) {
             return '';
         }
 
@@ -396,7 +396,7 @@ class Widgets
 
     private static function entryFirstImage(string $type, $id, string $size = 's'): string
     {
-        if (is_null(dcCore::app()->auth) || is_null(dcCore::app()->blog) || !in_array($type, ['post', 'page', 'galitem'])) {
+        if (is_null(dcCore::app()->blog) || !in_array($type, ['post', 'page', 'galitem'])) {
             return '';
         }
 
