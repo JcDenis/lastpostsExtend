@@ -1,22 +1,19 @@
 <?php
-/**
- * @brief lastpostsExtend, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\lastpostsExtend;
 
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Process;
 
+/**
+ * @brief       lastpostsExtend frontend class.
+ * @ingroup     lastpostsExtend
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
+ */
 class Frontend extends Process
 {
     public static function init(): bool
@@ -30,9 +27,7 @@ class Frontend extends Process
             return false;
         }
 
-        dcCore::app()->addBehaviors([
-            'initWidgets' => [Widgets::class, 'initWidgets'],
-        ]);
+        App::behavior()->addBehavior('initWidgets', Widgets::initWidgets(...));
 
         return true;
     }

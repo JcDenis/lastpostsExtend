@@ -1,22 +1,10 @@
 <?php
-/**
- * @brief lastpostsExtend, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\lastpostsExtend;
 
-use dcBlog;
-use dcCore;
-use dcMeta;
+use Dotclear\App;
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Text;
 use Dotclear\Helper\File\Path;
@@ -24,12 +12,18 @@ use Dotclear\Helper\Html\Html;
 use Dotclear\Plugin\widgets\WidgetsStack;
 use Dotclear\Plugin\widgets\WidgetsElement;
 
+/**
+ * @brief       lastpostsExtend widgets class.
+ * @ingroup     lastpostsExtend
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
+ */
 class Widgets
 {
     public static function initWidgets(WidgetsStack $w): void
     {
-        // nullsafe
-        if (is_null(dcCore::app()->blog)) {
+        if (!App::blog()->isDefined()) {
             return;
         }
 
@@ -37,7 +31,7 @@ class Widgets
         $w->create(
             'lastpostsextend',
             __('Last entries (Extended)'),
-            [self::class, 'parseWidget'],
+            self::parseWidget(...),
             null,
             __('Extended list of entries')
         );
@@ -51,7 +45,7 @@ class Widgets
             __('Gallery') => 'galitem',
         ];
         // plugin muppet types
-        if (dcCore::app()->plugins->getDefine('muppet')->isDefined() && class_exists('\muppet')) {
+        if (App::plugins()->getDefine('muppet')->isDefined() && class_exists('\muppet')) {
             $muppet_types = \muppet::getPostTypes();
             if (is_array($muppet_types) && !empty($muppet_types)) {
                 foreach ($muppet_types as $k => $v) {
@@ -68,7 +62,7 @@ class Widgets
         );
 
         // Category (post and page have same category)
-        $rs = dcCore::app()->blog->getCategories([
+        $rs = App::blog()->getCategories([
             'post_type' => 'post',
         ]);
         $categories = [
@@ -135,7 +129,7 @@ class Widgets
         );
 
         // Tag
-        if (dcCore::app()->plugins->moduleExists('tags')) {
+        if (App::plugins()->moduleExists('tags')) {
             $w->lastpostsextend->setting(
                 'tag',
                 __('Limit to tags:'),
@@ -234,7 +228,10 @@ class Widgets
     public static function parseWidget(WidgetsElement $w): string
     {
         // Widget is offline & Home page only
-        if (is_null(dcCore::app()->blog) || $w->offline || !$w->checkHomeOnly(dcCore::app()->url->type)) {
+        if (!App::blog()->isDefined()
+            || $w->offline
+            || !$w->checkHomeOnly(App::url()->type)
+        ) {
             return '';
         }
 
@@ -306,19 +303,19 @@ class Widgets
         }
 
         // Tags
-        if (dcCore::app()->plugins->moduleExists('tags') && $w->tag) {
+        if (App::plugins()->moduleExists('tags') && $w->tag) {
             $tags = explode(',', $w->tag);
             foreach ($tags as $i => $tag) {
                 $tags[$i] = trim($tag);
             }
-            $params['from'] .= ', ' . dcCore::app()->prefix . dcMeta::META_TABLE_NAME . ' META ';
+            $params['from'] .= ', ' . App::con()->prefix() . App::meta()::META_TABLE_NAME . ' META ';
             $params['sql']  .= 'AND META.post_id = P.post_id ';
-            $params['sql']  .= 'AND META.meta_id ' . dcCore::app()->con->in($tags) . ' ';
+            $params['sql']  .= 'AND META.meta_id ' . App::con()->in($tags) . ' ';
             $params['sql']  .= "AND META.meta_type = 'tag' ";
         }
 
-        $rs = dcCore::app()->auth->sudo(
-            [dcCore::app()->blog, 'getPosts'],
+        $rs = App::auth()->sudo(
+            App::blog()->getPosts(...),
             $params,
             false
         );
@@ -332,20 +329,20 @@ class Widgets
         $res = $w->title ? $w->renderTitle(Html::escapeHTML($w->title)) : '';
 
         while ($rs->fetch()) {
-            if (is_null(dcCore::app()->blog)) { // phpstan ignores previous check !?
+            if (!App::blog()->isDefined()) { // phpstan ignores previous check !?
                 break;
             }
-            $published = ((int) $rs->f('post_status')) == dcBlog::POST_PUBLISHED;
+            $published = ((int) $rs->f('post_status')) == App::blog()::POST_PUBLISHED;
 
             $res .= '<li>' .
             '<' . ($published ? 'a href="' . $rs->getURL() . '"' : 'span') .
             ' title="' .
             Date::dt2str(
-                dcCore::app()->blog->settings->get('system')->get('date_format'),
+                App::blog()->settings()->get('system')->get('date_format'),
                 $rs->f('post_upddt')
             ) . ', ' .
             Date::dt2str(
-                dcCore::app()->blog->settings->get('system')->get('time_format'),
+                App::blog()->settings()->get('system')->get('time_format'),
                 $rs->f('post_upddt')
             ) . '">' .
             Html::escapeHTML($rs->f('post_title')) .
@@ -369,9 +366,9 @@ class Widgets
             if ($w->excerpt) {
                 $excerpt = $rs->f('post_excerpt');
                 if ($rs->f('post_format') == 'wiki') {
-                    dcCore::app()->initWikiComment();
-                    $excerpt = dcCore::app()->wikiTransform($excerpt);
-                    $excerpt = dcCore::app()->HTMLfilter($excerpt);
+                    App::filter()->initWikiComment();
+                    $excerpt = App::filter()->wikiTransform($excerpt);
+                    $excerpt = App::filter()->HTMLfilter($excerpt);
                 }
                 if (strlen($excerpt) > 0) {
                     $cut = Text::cutString(
@@ -396,12 +393,12 @@ class Widgets
 
     private static function entryFirstImage(string $type, $id, string $size = 's'): string
     {
-        if (is_null(dcCore::app()->blog) || !in_array($type, ['post', 'page', 'galitem'])) {
+        if (!App::blog()->isDefined() || !in_array($type, ['post', 'page', 'galitem'])) {
             return '';
         }
 
-        $rs = dcCore::app()->auth->sudo(
-            [dcCore::app()->blog, 'getPosts'],
+        $rs = App::auth()->sudo(
+            App::blog()->getPosts(...),
             ['post_id' => $id, 'post_type' => $type],
             false
         );
@@ -414,13 +411,13 @@ class Widgets
             $size = 's';
         }
 
-        $p_url  = (string) dcCore::app()->blog->settings->get('system')->get('public_url');
+        $p_url  = (string) App::blog()->settings()->get('system')->get('public_url');
         $p_site = (string) preg_replace(
             '#^(.+?//.+?)/(.*)$#',
             '$1',
-            dcCore::app()->blog->url
+            App::blog()->url()
         );
-        $p_root = dcCore::app()->blog->public_path;
+        $p_root = App::blog()->publicPath();
 
         $pattern = '(?:' . preg_quote($p_site, '/') . ')?' . preg_quote($p_url, '/');
         $pattern = sprintf('/<img.+?src="%s(.*?\.(?:jpg|gif|png))"[^>]+/msu', $pattern);
