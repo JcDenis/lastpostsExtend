@@ -1,10 +1,10 @@
 # README
 
-[![Release](https://img.shields.io/badge/release-2023.10.19-a2cbe9.svg)](https://git.dotclear.watch/JcDenis/lastpostsExtend/releases)
-[![Date](https://img.shields.io/badge/date-2023.10.19-c44d58.svg)](https://git.dotclear.watch/JcDenis/lastpostsExtend/releases)
-[![Dotclear](https://img.shields.io/badge/dotclear-v2.28-137bbb.svg)](https://fr.dotclear.org/download)
+[![Release](https://img.shields.io/github/v/release/jcdenis/lastpostsExtend?color=lightblue)](https://github.com/JcDenis/lastpostsExtend/releases)
+![Date](https://img.shields.io/github/release-date/jcdenis/lastpostsExtend?color=red)
+[![Dotclear](https://img.shields.io/badge/dotclear-v2.33-137bbb.svg)](https://fr.dotclear.org/download)
 [![Dotaddict](https://img.shields.io/badge/dotaddict-official-9ac123.svg)](https://plugins.dotaddict.org/dc2/details/lastpostsExtend)
-[![License](https://img.shields.io/badge/license-GPL--2.0-ececec.svg)](https://git.dotclear.watch/JcDenis/lastpostsExtend/src/branch/master/LICENSE)
+[![License](https://img.shields.io/github/license/jcdenis/lastpostsExtend?color=white)](https://github.com/JcDenis/lastpostsExtend/src/branch/master/LICENSE)
 
 ## ABOUT
 
@@ -27,10 +27,10 @@ Add and configure "Last entries (Extended)" from widgets manager.
 
 ## LINKS
 
-* [License](https://git.dotclear.watch/JcDenis/lastpostsExtend/src/branch/master/LICENSE)
-* [Packages & details](https://git.dotclear.watch/JcDenis/lastpostsExtend/releases) (or on [Dotaddict](https://plugins.dotaddict.org/dc2/details/lastpostsExtend))
-* [Sources & contributions](https://git.dotclear.watch/JcDenis/lastpostsExtend) (or on [GitHub](https://github.com/JcDenis/lastpostsExtend))
-* [Issues & security](https://git.dotclear.watch/JcDenis/lastpostsExtend/issues) (or on [GitHub](https://github.com/JcDenis/lastpostsExtend/issues))
+* [License](https://github.com/JcDenis/lastpostsExtend/src/branch/master/LICENSE)
+* [Packages & details](https://github.com/JcDenis/lastpostsExtend/releases) (or on [Dotaddict](https://plugins.dotaddict.org/dc2/details/lastpostsExtend))
+* [Sources & contributions](https://github.com/JcDenis/lastpostsExtend)
+* [Issues & security](https://github.com/JcDenis/lastpostsExtend/issues)
 
 
 ## CONTRIBUTORS
