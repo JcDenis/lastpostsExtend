@@ -17,7 +17,7 @@ $this->registerModule(
     'Last entries (Extended)',
     'Extended list of entries',
     'Jean-Christian Denis and contributors',
-    '2025.09.09',
+    '2025.09.13',
     [
         'requires'    => [['core', '2.36']],
         'permissions' => 'My',
