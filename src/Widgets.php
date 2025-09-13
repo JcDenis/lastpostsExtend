@@ -36,7 +36,7 @@ class Widgets
             __('Extended list of entries')
         );
         // Title
-        $w->lastpostsextend->addTitle(__('Last entries'));
+        $w->get('lastpostsextend')->addTitle(__('Last entries'));
 
         // post type
         $posttypes = [
@@ -53,7 +53,7 @@ class Widgets
                 }
             }
         }
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'posttype',
             __('Type:'),
             'post',
@@ -75,7 +75,7 @@ class Widgets
                 (int) $rs->f('level') - 1
             ) . '&bull; ' . Html::escapeHTML($rs->f('cat_title'))] = $rs->f('cat_id');
         }
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'category',
             __('Category:'),
             '',
@@ -85,7 +85,7 @@ class Widgets
         unset($rs, $categories);
 
         // Passworded
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'passworded',
             __('Protection:'),
             'no',
@@ -98,7 +98,7 @@ class Widgets
         );
 
         // Status
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'status',
             __('Status:'),
             '1',
@@ -113,7 +113,7 @@ class Widgets
         );
 
         // Selected entries only
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'selectedonly',
             __('Selected entries only'),
             0,
@@ -121,7 +121,7 @@ class Widgets
         );
 
         // Updated entries only
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'updatedonly',
             __('Updated entries only'),
             0,
@@ -130,7 +130,7 @@ class Widgets
 
         // Tag
         if (App::plugins()->moduleExists('tags')) {
-            $w->lastpostsextend->setting(
+            $w->get('lastpostsextend')->setting(
                 'tag',
                 __('Limit to tags:'),
                 '',
@@ -139,7 +139,7 @@ class Widgets
         }
 
         // Search
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'search',
             __('Limit to words:'),
             '',
@@ -147,7 +147,7 @@ class Widgets
         );
 
         // Entries limit
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'limit',
             __('Entries limit:'),
             10,
@@ -155,7 +155,7 @@ class Widgets
         );
 
         // Sort
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'sortby',
             __('Order by:'),
             'date',
@@ -166,7 +166,7 @@ class Widgets
                 __('Comments') => 'nb_comment',
             ]
         );
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'sort',
             __('Sort:'),
             'desc',
@@ -178,7 +178,7 @@ class Widgets
         );
 
         // First image
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'firstimage',
             __('Show entries first image:'),
             '',
@@ -194,7 +194,7 @@ class Widgets
         );
 
         // With excerpt
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'excerpt',
             __('Show entries excerpt'),
             0,
@@ -202,7 +202,7 @@ class Widgets
         );
 
         // Excerpt cut length
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'excerptlen',
             __('Excerpt length:'),
             100,
@@ -210,7 +210,7 @@ class Widgets
         );
 
         // Comment count
-        $w->lastpostsextend->setting(
+        $w->get('lastpostsextend')->setting(
             'commentscount',
             __('Show comments count'),
             0,
@@ -218,7 +218,7 @@ class Widgets
         );
 
         // commons
-        $w->lastpostsextend
+        $w->get('lastpostsextend')
             ->addHomeOnly()
             ->addContentOnly()
             ->addClass()
@@ -229,14 +229,14 @@ class Widgets
     {
         // Widget is offline & Home page only
         if (!App::blog()->isDefined()
-            || $w->offline
+            || $w->get('offline')
             || !$w->checkHomeOnly(App::url()->type)
         ) {
             return '';
         }
 
         // Need posts excerpt
-        if ($w->excerpt) {
+        if ($w->get('excerpt')) {
             $params['columns'][] = 'post_excerpt';
         }
 
@@ -248,24 +248,24 @@ class Widgets
         ];
 
         // Passworded
-        if ($w->passworded == 'yes') {
+        if ($w->get('passworded') == 'yes') {
             $params['sql'] .= 'AND post_password IS NOT NULL ';
-        } elseif ($w->passworded == 'no') {
+        } elseif ($w->get('passworded') == 'no') {
             $params['sql'] .= 'AND post_password IS NULL ';
         }
 
         // Status
-        if ($w->status != 'all') {
-            $params['post_status'] = $w->status;
+        if ($w->get('status') != 'all') {
+            $params['post_status'] = $w->get('status');
         }
 
         // Search words
-        if ('' != $w->search) {
-            $params['search'] = $w->search;
+        if ('' != $w->get('search')) {
+            $params['search'] = $w->get('search');
         }
 
         // Updated posts only
-        if ($w->updatedonly) {
+        if ($w->get('updatedonly')) {
             $params['sql'] .= 'AND post_creadt < post_upddt ' .
                 'AND post_dt < post_upddt ';
             /*
@@ -273,44 +273,44 @@ class Widgets
                         "AND TIMESTAMP(post_creadt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ".
                         "AND TIMESTAMP(post_dt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ";
             //*/
-            $params['order'] = $w->sortby == 'date' ?
-                'post_upddt ' : $w->sortby . ' ';
+            $params['order'] = $w->get('sortby') == 'date' ?
+                'post_upddt ' : $w->get('sortby') . ' ';
         } else {
-            $params['order'] = $w->sortby == 'date' ?
-                'post_dt ' : $w->sortby . ' ';
+            $params['order'] = $w->get('sortby') == 'date' ?
+                'post_dt ' : $w->get('sortby') . ' ';
         }
-        $params['order'] .= $w->sort == 'asc' ? 'asc' : 'desc';
-        $params['limit']      = abs((int) $w->limit);
+        $params['order'] .= $w->get('sort') == 'asc' ? 'asc' : 'desc';
+        $params['limit']      = abs((int) $w->get('limit'));
         $params['no_content'] = true;
 
         // Selected posts only
-        if ($w->selectedonly) {
+        if ($w->get('selectedonly')) {
             $params['post_selected'] = 1;
         }
 
         // Post type
-        $params['post_type'] = $w->posttype;
+        $params['post_type'] = $w->get('posttype');
 
         // Category
-        if ($w->category) {
-            if ($w->category == 'null') {
+        if ($w->get('category')) {
+            if ($w->get('category') == 'null') {
                 $params['sql'] .= ' AND P.cat_id IS NULL ';
-            } elseif (is_numeric($w->category)) {
-                $params['cat_id'] = (int) $w->category;
+            } elseif (is_numeric($w->get('category'))) {
+                $params['cat_id'] = (int) $w->get('category');
             } else {
-                $params['cat_url'] = $w->category;
+                $params['cat_url'] = $w->get('category');
             }
         }
 
         // Tags
-        if (App::plugins()->moduleExists('tags') && $w->tag) {
-            $tags = explode(',', $w->tag);
+        if (App::plugins()->moduleExists('tags') && $w->get('tag')) {
+            $tags = explode(',', $w->get('tag'));
             foreach ($tags as $i => $tag) {
                 $tags[$i] = trim($tag);
             }
-            $params['from'] .= ', ' . App::con()->prefix() . App::meta()::META_TABLE_NAME . ' META ';
+            $params['from'] .= ', ' . App::db()->con()->prefix() . App::meta()::META_TABLE_NAME . ' META ';
             $params['sql']  .= 'AND META.post_id = P.post_id ';
-            $params['sql']  .= 'AND META.meta_id ' . App::con()->in($tags) . ' ';
+            $params['sql']  .= 'AND META.meta_id ' . App::db()->con()->in($tags) . ' ';
             $params['sql']  .= "AND META.meta_type = 'tag' ";
         }
 
@@ -326,12 +326,9 @@ class Widgets
         }
 
         // Parse result
-        $res = $w->title ? $w->renderTitle(Html::escapeHTML($w->title)) : '';
+        $res = $w->get('title') ? $w->renderTitle(Html::escapeHTML($w->get('title'))) : '';
 
         while ($rs->fetch()) {
-            if (!App::blog()->isDefined()) { // phpstan ignores previous check !?
-                break;
-            }
             $published = ((int) $rs->f('post_status')) == App::blog()::POST_PUBLISHED;
 
             $res .= '<li>' .
@@ -349,21 +346,21 @@ class Widgets
             '</' . ($published ? 'a' : 'span') . '>';
 
             // Nb comments
-            if ($w->commentscount && $published) {
+            if ($w->get('commentscount') && $published) {
                 $res .= ' (' . $rs->nb_comment . ')';
             }
 
             // First image
-            if ($w->firstimage != '') {
+            if ($w->get('firstimage') != '') {
                 $res .= self::entryFirstImage(
                     $rs->f('post_type'),
                     $rs->f('post_id'),
-                    $w->firstimage
+                    $w->get('firstimage')
                 );
             }
 
             // Excerpt
-            if ($w->excerpt) {
+            if ($w->get('excerpt')) {
                 $excerpt = $rs->f('post_excerpt');
                 if ($rs->f('post_format') == 'wiki') {
                     App::filter()->initWikiComment();
@@ -373,7 +370,7 @@ class Widgets
                 if (strlen($excerpt) > 0) {
                     $cut = Text::cutString(
                         $excerpt,
-                        abs((int) $w->excerptlen)
+                        abs((int) $w->get('excerptlen'))
                     );
                     $res .= ' : ' . $cut . (strlen($cut) < strlen($excerpt) ? '...' : '');
 
@@ -384,14 +381,14 @@ class Widgets
         }
 
         return $w->renderDiv(
-            (bool) $w->content_only,
-            'lastpostsextend ' . $w->class,
+            (bool) $w->get('content_only'),
+            'lastpostsextend ' . $w->get('class'),
             '',
             '<ul>' . $res . '</ul>'
         );
     }
 
-    private static function entryFirstImage(string $type, $id, string $size = 's'): string
+    private static function entryFirstImage(string $type, string $id, string $size = 's'): string
     {
         if (!App::blog()->isDefined() || !in_array($type, ['post', 'page', 'galitem'])) {
             return '';
