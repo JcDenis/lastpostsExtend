@@ -1,3 +1,7 @@
+lastpostsExtend xxxx.xx.xx
+===========================================================
+* Bump Dotclear from 2.36 to 2.39
+
 lastpostsExtend 2025.09.09
 ===========================================================
 * Bump Dotclear from 2.28 to 2.36
