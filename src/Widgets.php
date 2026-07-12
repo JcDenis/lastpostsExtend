@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\lastpostsExtend;
 
 use Dotclear\App;
+use Dotclear\Database\MetaRecord;
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Text;
 use Dotclear\Helper\File\Path;
@@ -35,8 +36,14 @@ class Widgets
             null,
             __('Extended list of entries')
         );
+
+        $_ = $w->get('lastpostsextend');
+        if (!($_ instanceof WidgetsElement)) {
+            return;
+        }
+        
         // Title
-        $w->get('lastpostsextend')->addTitle(__('Last entries'));
+        $_->addTitle(__('Last entries'));
 
         // post type
         $posttypes = [
@@ -49,11 +56,14 @@ class Widgets
             $muppet_types = \muppet::getPostTypes();
             if (is_array($muppet_types) && !empty($muppet_types)) {
                 foreach ($muppet_types as $k => $v) {
-                    $posttypes[$v['name']] = $k;
+                    if (is_array($v) && is_string($v['name'])) {
+                        $posttypes[$v['name']] = $k;
+                    }
+
                 }
             }
         }
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'posttype',
             __('Type:'),
             'post',
@@ -72,10 +82,10 @@ class Widgets
         while ($rs->fetch()) {
             $categories[str_repeat(
                 '&nbsp;&nbsp;',
-                (int) $rs->f('level') - 1
-            ) . '&bull; ' . Html::escapeHTML($rs->f('cat_title'))] = $rs->f('cat_id');
+                $rs->intField('level') - 1
+            ) . '&bull; ' . Html::escapeHTML($rs->strField('cat_title'))] = $rs->intField('cat_id');
         }
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'category',
             __('Category:'),
             '',
@@ -85,7 +95,7 @@ class Widgets
         unset($rs, $categories);
 
         // Passworded
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'passworded',
             __('Protection:'),
             'no',
@@ -98,7 +108,7 @@ class Widgets
         );
 
         // Status
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'status',
             __('Status:'),
             '1',
@@ -113,7 +123,7 @@ class Widgets
         );
 
         // Selected entries only
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'selectedonly',
             __('Selected entries only'),
             0,
@@ -121,7 +131,7 @@ class Widgets
         );
 
         // Updated entries only
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'updatedonly',
             __('Updated entries only'),
             0,
@@ -130,7 +140,7 @@ class Widgets
 
         // Tag
         if (App::plugins()->moduleExists('tags')) {
-            $w->get('lastpostsextend')->setting(
+            $_->setting(
                 'tag',
                 __('Limit to tags:'),
                 '',
@@ -139,7 +149,7 @@ class Widgets
         }
 
         // Search
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'search',
             __('Limit to words:'),
             '',
@@ -147,7 +157,7 @@ class Widgets
         );
 
         // Entries limit
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'limit',
             __('Entries limit:'),
             10,
@@ -155,7 +165,7 @@ class Widgets
         );
 
         // Sort
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'sortby',
             __('Order by:'),
             'date',
@@ -166,7 +176,7 @@ class Widgets
                 __('Comments') => 'nb_comment',
             ]
         );
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'sort',
             __('Sort:'),
             'desc',
@@ -178,7 +188,7 @@ class Widgets
         );
 
         // First image
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'firstimage',
             __('Show entries first image:'),
             '',
@@ -194,7 +204,7 @@ class Widgets
         );
 
         // With excerpt
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'excerpt',
             __('Show entries excerpt'),
             0,
@@ -202,7 +212,7 @@ class Widgets
         );
 
         // Excerpt cut length
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'excerptlen',
             __('Excerpt length:'),
             100,
@@ -210,7 +220,7 @@ class Widgets
         );
 
         // Comment count
-        $w->get('lastpostsextend')->setting(
+        $_->setting(
             'commentscount',
             __('Show comments count'),
             0,
@@ -218,7 +228,7 @@ class Widgets
         );
 
         // commons
-        $w->get('lastpostsextend')
+        $_
             ->addHomeOnly()
             ->addContentOnly()
             ->addClass()
@@ -230,7 +240,7 @@ class Widgets
         // Widget is offline & Home page only
         if (!App::blog()->isDefined()
             || $w->get('offline')
-            || !$w->checkHomeOnly(App::url()->type)
+            || !$w->checkHomeOnly(App::url()->getType())
         ) {
             return '';
         }
@@ -274,13 +284,13 @@ class Widgets
                         "AND TIMESTAMP(post_dt ,'DD-MM-YYYY HH24:MI:SS') < TIMESTAMP(post_upddt ,'DD-MM-YYYY HH24:MI:SS') ";
             //*/
             $params['order'] = $w->get('sortby') == 'date' ?
-                'post_upddt ' : $w->get('sortby') . ' ';
+                'post_upddt ' : (is_string($w->get('sortby')) ? $w->get('sortby') : '') . ' ';
         } else {
             $params['order'] = $w->get('sortby') == 'date' ?
-                'post_dt ' : $w->get('sortby') . ' ';
+                'post_dt ' : (is_string($w->get('sortby')) ? $w->get('sortby') : '') . ' ';
         }
         $params['order'] .= $w->get('sort') == 'asc' ? 'asc' : 'desc';
-        $params['limit']      = abs((int) $w->get('limit'));
+        $params['limit']      = is_numeric($w->get('limit')) ? abs((int) $w->get('limit')) : 10;
         $params['no_content'] = true;
 
         // Selected posts only
@@ -304,7 +314,7 @@ class Widgets
 
         // Tags
         if (App::plugins()->moduleExists('tags') && $w->get('tag')) {
-            $tags = explode(',', $w->get('tag'));
+            $tags = explode(',', is_string($w->get('tag')) ? $w->get('tag') : '');
             foreach ($tags as $i => $tag) {
                 $tags[$i] = trim($tag);
             }
@@ -321,48 +331,50 @@ class Widgets
         );
 
         // No result
-        if ($rs->isEmpty()) {
+        if (!($rs instanceof MetaRecord) || $rs->isEmpty()) {
             return '';
         }
 
         // Parse result
-        $res = $w->get('title') ? $w->renderTitle(Html::escapeHTML($w->get('title'))) : '';
+        $res = is_string($w->get('title')) ? $w->renderTitle(Html::escapeHTML($w->get('title'))) : '';
 
         while ($rs->fetch()) {
-            $published = ((int) $rs->f('post_status')) == App::blog()::POST_PUBLISHED;
+            $published = $rs->intField('post_status') == App::blog()::POST_PUBLISHED;
+            $df = App::blog()->settings()->get('system')->get('date_format');
+            $tf = App::blog()->settings()->get('system')->get('time_format');
 
             $res .= '<li>' .
             '<' . ($published ? 'a href="' . $rs->getURL() . '"' : 'span') .
             ' title="' .
             Date::dt2str(
-                App::blog()->settings()->get('system')->get('date_format'),
-                $rs->f('post_upddt')
+                is_string($df) ? $df : '',
+                $rs->strField('post_upddt')
             ) . ', ' .
             Date::dt2str(
-                App::blog()->settings()->get('system')->get('time_format'),
-                $rs->f('post_upddt')
+                is_string($tf) ? $tf : '',
+                $rs->strField('post_upddt')
             ) . '">' .
-            Html::escapeHTML($rs->f('post_title')) .
+            Html::escapeHTML($rs->strField('post_title')) .
             '</' . ($published ? 'a' : 'span') . '>';
 
             // Nb comments
             if ($w->get('commentscount') && $published) {
-                $res .= ' (' . $rs->nb_comment . ')';
+                $res .= ' (' . $rs->strField('nb_comment') . ')';
             }
 
             // First image
             if ($w->get('firstimage') != '') {
                 $res .= self::entryFirstImage(
-                    $rs->f('post_type'),
-                    $rs->f('post_id'),
-                    $w->get('firstimage')
+                    $rs->strField('post_type'),
+                    $rs->intField('post_id'),
+                    is_string($w->get('firstimage')) ? $w->get('firstimage') : 's'
                 );
             }
 
             // Excerpt
             if ($w->get('excerpt')) {
-                $excerpt = $rs->f('post_excerpt');
-                if ($rs->f('post_format') == 'wiki') {
+                $excerpt = $rs->strField('post_excerpt');
+                if ($rs->strField('post_format') == 'wiki') {
                     App::filter()->initWikiComment();
                     $excerpt = App::filter()->wikiTransform($excerpt);
                     $excerpt = App::filter()->HTMLfilter($excerpt);
@@ -370,7 +382,7 @@ class Widgets
                 if (strlen($excerpt) > 0) {
                     $cut = Text::cutString(
                         $excerpt,
-                        abs((int) $w->get('excerptlen'))
+                        is_numeric($w->get('excerptlen')) ? abs((int) $w->get('excerptlen')) : 80
                     );
                     $res .= ' : ' . $cut . (strlen($cut) < strlen($excerpt) ? '...' : '');
 
@@ -382,13 +394,13 @@ class Widgets
 
         return $w->renderDiv(
             (bool) $w->get('content_only'),
-            'lastpostsextend ' . $w->get('class'),
+            'lastpostsextend ' . (is_string($w->get('class')) ? $w->get('class') : ''),
             '',
             '<ul>' . $res . '</ul>'
         );
     }
 
-    private static function entryFirstImage(string $type, string $id, string $size = 's'): string
+    private static function entryFirstImage(string $type, int $id, string $size = 's'): string
     {
         if (!App::blog()->isDefined() || !in_array($type, ['post', 'page', 'galitem'])) {
             return '';
@@ -400,7 +412,7 @@ class Widgets
             false
         );
 
-        if ($rs->isEmpty()) {
+        if (!($rs instanceof MetaRecord) || $rs->isEmpty()) {
             return '';
         }
 
@@ -408,7 +420,8 @@ class Widgets
             $size = 's';
         }
 
-        $p_url  = (string) App::blog()->settings()->get('system')->get('public_url');
+        $p_url  = App::blog()->settings()->get('system')->get('public_url');
+        $p_url = is_string($p_url) ? $p_url : '';
         $p_site = (string) preg_replace(
             '#^(.+?//.+?)/(.*)$#',
             '$1',
@@ -422,7 +435,7 @@ class Widgets
         $src = '';
         $alt = '';
 
-        $subject = $rs->f('post_excerpt_xhtml') . $rs->f('post_content_xhtml') . $rs->f('cat_desc');
+        $subject = $rs->strField('post_excerpt_xhtml') . $rs->strField('post_content_xhtml') . $rs->strField('cat_desc');
         if (preg_match_all($pattern, $subject, $m) > 0) {
             foreach ($m[1] as $i => $img) {
                 if (($src = self::ContentFirstImageLookup($p_root, $img, $size)) != '') {
@@ -443,7 +456,7 @@ class Widgets
         return
         '<div class="img-box">' .
         '<div class="img-thumbnail">' .
-        '<a title="' . Html::escapeHTML($rs->f('post_title')) . '" href="' . $rs->getURL() . '">' .
+        '<a title="' . Html::escapeHTML($rs->strField('post_title')) . '" href="' . $rs->getURL() . '">' .
         '<img alt="' . $alt . '" src="' . stripslashes($src) . '" />' .
         '</a></div>' .
         "</div>\n";
