@@ -1,3 +1,7 @@
+lastpostsExtend 2026.11.05
+===========================================================
+* Fix comments count on SQLite and deprecated post status
+
 lastpostsExtend 2026.08.12
 ===========================================================
 * Bump Dotclear from 2.36 to 2.39
