@@ -339,7 +339,7 @@ class Widgets
         $res = is_string($w->get('title')) ? $w->renderTitle(Html::escapeHTML($w->get('title'))) : '';
 
         while ($rs->fetch()) {
-            $published = $rs->intField('post_status') == App::blog()::POST_PUBLISHED;
+            $published = $rs->intField('post_status') == App::status()->post()::PUBLISHED;
             $df = App::blog()->settings()->get('system')->get('date_format');
             $tf = App::blog()->settings()->get('system')->get('time_format');
 
@@ -359,7 +359,7 @@ class Widgets
 
             // Nb comments
             if ($w->get('commentscount') && $published) {
-                $res .= ' (' . $rs->strField('nb_comment') . ')';
+                $res .= ' (' . $rs->intField('nb_comment') . ')';
             }
 
             // First image
