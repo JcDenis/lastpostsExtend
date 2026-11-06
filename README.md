@@ -37,5 +37,6 @@ Add and configure "Last entries (Extended)" from widgets manager.
 
 * Jean-Chirstian Denis (author)
 * Pierre Van Glabeke
+* Claude (AI assistant by Anthropic)
 
 You are welcome to contribute to this code.
