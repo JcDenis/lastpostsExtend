@@ -75,3 +75,6 @@ msgstr "Taille de l'extrait :"
 msgid "Show comments count"
 msgstr "Afficher le nombre de commentaires"
 
+
+msgid "all"
+msgstr "tous"
