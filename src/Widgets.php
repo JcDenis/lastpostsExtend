@@ -113,13 +113,7 @@ class Widgets
             __('Status:'),
             '1',
             'combo',
-            [
-                __('all')         => 'all',
-                __('pending')     => '-2',
-                __('scheduled')   => '-1',
-                __('unpublished') => '0',
-                __('published')   => '1',
-            ]
+            [__('all') => 'all'] + App::status()->post()->combo()
         );
 
         // Selected entries only
@@ -245,17 +239,17 @@ class Widgets
             return '';
         }
 
-        // Need posts excerpt
-        if ($w->get('excerpt')) {
-            $params['columns'][] = 'post_excerpt';
-        }
-
         // prepare request params
         $params = [
             'sql'     => '',
             'columns' => [],
             'from'    => '',
         ];
+
+        // Need posts excerpt
+        if ($w->get('excerpt')) {
+            $params['columns'][] = 'post_excerpt_xhtml';
+        }
 
         // Passworded
         if ($w->get('passworded') == 'yes') {
@@ -264,9 +258,13 @@ class Widgets
             $params['sql'] .= 'AND post_password IS NULL ';
         }
 
-        // Status
-        if ($w->get('status') != 'all') {
-            $params['post_status'] = $w->get('status');
+        // Status (on frontend, core always adds published status to the given ones)
+        $status = $w->get('status');
+        if ($status === 'all') {
+            $params['post_status'] = array_map(intval(...), array_values(App::status()->post()->combo()));
+        } elseif (is_numeric($status)) {
+            $params['post_status'] = (int) $status;
+            $params['sql'] .= 'AND post_status = ' . (int) $status . ' ';
         }
 
         // Search words
@@ -324,11 +322,19 @@ class Widgets
             $params['sql']  .= "AND META.meta_type = 'tag' ";
         }
 
-        $rs = App::auth()->sudo(
-            App::blog()->getPosts(...),
-            $params,
-            false
-        );
+        // Password protected entries are excluded by default
+        $without_password = App::blog()->withoutPassword();
+        App::blog()->withoutPassword($w->get('passworded') == 'no');
+
+        try {
+            $rs = App::auth()->sudo(
+                App::blog()->getPosts(...),
+                $params,
+                false
+            );
+        } finally {
+            App::blog()->withoutPassword($without_password);
+        }
 
         // No result
         if (!($rs instanceof MetaRecord) || $rs->isEmpty()) {
@@ -336,7 +342,8 @@ class Widgets
         }
 
         // Parse result
-        $res = is_string($w->get('title')) ? $w->renderTitle(Html::escapeHTML($w->get('title'))) : '';
+        $title = is_string($w->get('title')) ? $w->renderTitle(Html::escapeHTML($w->get('title'))) : '';
+        $res   = '';
 
         while ($rs->fetch()) {
             $published = $rs->intField('post_status') == App::status()->post()::PUBLISHED;
@@ -373,18 +380,13 @@ class Widgets
 
             // Excerpt
             if ($w->get('excerpt')) {
-                $excerpt = $rs->strField('post_excerpt');
-                if ($rs->strField('post_format') == 'wiki') {
-                    App::filter()->initWikiComment();
-                    $excerpt = App::filter()->wikiTransform($excerpt);
-                    $excerpt = App::filter()->HTMLfilter($excerpt);
-                }
-                if (strlen($excerpt) > 0) {
+                $excerpt = trim(Html::decodeEntities(Html::clean($rs->strField('post_excerpt_xhtml'))));
+                if ($excerpt !== '') {
                     $cut = Text::cutString(
                         $excerpt,
                         is_numeric($w->get('excerptlen')) ? abs((int) $w->get('excerptlen')) : 80
                     );
-                    $res .= ' : ' . $cut . (strlen($cut) < strlen($excerpt) ? '...' : '');
+                    $res .= ' : ' . Html::escapeHTML($cut) . (strlen($cut) < strlen($excerpt) ? '...' : '');
 
                     unset($cut);
                 }
@@ -396,7 +398,7 @@ class Widgets
             (bool) $w->get('content_only'),
             'lastpostsextend ' . (is_string($w->get('class')) ? $w->get('class') : ''),
             '',
-            '<ul>' . $res . '</ul>'
+            $title . '<ul>' . $res . '</ul>'
         );
     }
 
