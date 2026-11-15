@@ -12,6 +12,8 @@ _lastpostsExtend_ is a plugin for the open-source web publishing software called
 
 > Same as widget lastposts but with more options.
 
+A [user guide in French](https://github.com/JcDenis/lastpostsExtend/blob/master/docs/fr/utilisation.md) is available.
+
 ## REQUIREMENTS
 
 * Dotclear 2.39
@@ -27,6 +29,7 @@ Add and configure "Last entries (Extended)" from widgets manager.
 
 ## LINKS
 
+* [User guide (in French)](https://github.com/JcDenis/lastpostsExtend/blob/master/docs/fr/utilisation.md)
 * [License](https://github.com/JcDenis/lastpostsExtend/blob/master/LICENSE)
 * [Packages & details](https://github.com/JcDenis/lastpostsExtend/releases) (or on [Repository](https://dotclear.org/plugin/detail/lastpostsExtend))
 * [Sources & contributions](https://github.com/JcDenis/lastpostsExtend)
