@@ -1,6 +1,5 @@
 lastpostsExtend 2026.11.15
 ===========================================================
-* Add Claude to contributors
 * [fix] Widget excerpt, password protected entries, status filter and title position
 * [lang] Translate status filter
 * [docs] Add a user guide in French, with screenshots
