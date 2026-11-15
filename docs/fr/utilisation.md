@@ -34,7 +34,8 @@ Sur le blog, il affiche une liste de liens vers les billets. Au survol d'un lien
 
 * **Limiter aux mots-clés** : une liste de tags séparés par des virgules (si le plugin Tags est actif).
 * **Limiter aux mots** : une recherche dans le texte des billets.
-* **Protection** et **État** : voir « Bon à savoir ».
+* **Protection** : tous les billets, seulement ceux sans mot de passe, ou seulement ceux avec mot de passe.
+* **État** : tous les billets, ou seulement ceux d'un état (publié, en attente, programmé, non publié…).
 
 ## Trier et limiter
 
@@ -51,15 +52,12 @@ Sur le blog, il affiche une liste de liens vers les billets. Au survol d'un lien
 
 ![Nombre de commentaires](img/gadget-compteur.png)
 
-* **Afficher l'extrait** et **Taille de l'extrait** : voir « Bon à savoir ».
+* **Afficher l'extrait** et **Taille de l'extrait** : ajoute l'extrait du billet après son titre, en texte simple, coupé à la taille choisie.
 * Les options habituelles des gadgets : page d'accueil seulement, contenu seul, classe CSS, hors ligne.
 
 Si aucun billet ne correspond aux filtres, le gadget n'est pas affiché.
 
 ## Bon à savoir
 
-* L'extrait des billets n'est jamais affiché, même avec l'option cochée et des billets qui ont un extrait.
-* Les billets protégés par un mot de passe n'apparaissent jamais dans la liste, même avec « Protection » réglée sur « tous » ou « seulement avec mot de passe » : le gadget n'est alors pas affiché.
-* Le filtre « État » ne fonctionne pas comme annoncé : « publié » est la valeur par défaut, « tous » n'affiche pas les billets non publiés et « unpublished » affiche aussi les billets publiés.
-* Les valeurs de « État » (pending, scheduled, unpublished, published) ne sont pas traduites en français.
-* Le titre du gadget est placé à l'intérieur de la liste (`<ul>`), ce qui n'est pas du HTML valide.
+* Un billet sans extrait est affiché sans extrait, même avec l'option cochée.
+* Le gadget peut montrer des billets non publiés (filtre **État**) ou protégés par un mot de passe (filtre **Protection**) : leurs titres sont alors visibles par tous les visiteurs du blog.
